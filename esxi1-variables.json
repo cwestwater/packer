@@ -1,0 +1,11 @@
+{
+    "vm_name": "WIN2019-BIOS",
+    "vm_notes": "Windows Server 2019 BIOS Configuration. Built by Packer on  {{isotime \"2006-01-02\"}}",
+    "vcenter_server": "esxi-01.localdomain",
+    "esxi_host": "esxi-01.localdomain",
+    "host_datastore": "LocalHDDESXi1",
+    "esxi_username": "root",
+    "esxi_password": "VMware1!",
+    "winrm_username": "Administrator",
+    "winrm_password": "Password1"
+}

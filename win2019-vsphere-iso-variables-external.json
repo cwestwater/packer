@@ -1,0 +1,80 @@
+{
+  "description": "Builds a Windows 2019 Template with BIOS on a standalone ESXi host. Variables are defined in external file esxi1-variables.json",
+  "builders": [
+    {
+      "type": "vsphere-iso",
+      "vcenter_server": "{{user `vcenter_server`}}",
+      "host": "{{user `esxi_host`}}",
+      "insecure_connection": true,
+      "datastore": "{{user `host_datastore`}}",
+      "username": "{{user `esxi_username`}}",
+      "password": "{{user `esxi_password`}}",
+      "boot_wait": "5s",
+      "vm_name": "{{user `vm_name`}}",
+      "notes": "{{user `vm_notes`}}",
+      "CPUs": 2,
+      "RAM": 4096,
+      "firmware": "bios",
+      "vm_version": "16",
+      "guest_os_type": "windows9Server64Guest",
+      "network_adapters": [
+        {
+          "network": "VM Network",
+          "network_card": "vmxnet3"
+        }
+      ],
+      "storage": [
+        {
+          "disk_size": 40960,
+          "disk_thin_provisioned": true
+        }
+      ],
+      "disk_controller_type": "pvscsi",
+      "iso_paths": [
+        "[LocalHDDESXi1] ISO/MSEVAL-WS2019.iso",
+        "[LocalHDDESXi1] ISO/VMware-tools-windows-11.2.1.iso"
+      ],
+      "remove_cdrom": "true",
+      "floppy_files": "setup/bios/autounattend.xml",
+      "configuration_parameters": [
+        {
+          "devices.hotplug": false,
+          "guestInfo.svga.wddm.modeset": false,
+          "guestInfo.svga.wddm.modesetCCD": false,
+          "guestInfo.svga.wddm.modesetLegacySingle": false,
+          "guestInfo.svga.wddm.modesetLegacyMulti": false
+        }
+      ],
+      "communicator": "winrm",
+      "winrm_username": "{{user `winrm_username`}}",
+      "winrm_password": "{{user `winrm_password`}}",
+      "winrm_use_ssl": true,
+      "winrm_insecure": true,
+      "winrm_timeout": "30m",
+      "shutdown_command": "shutdown /s /t 5 /f /d p:2:4 /c \"Packer Build Shutdown\"",
+      "shutdown_timeout": "30m"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "windows-update",
+      "search_criteria": "IsInstalled=0",
+      "filters": [
+        "exclude:$_.Title -like '*Preview*'",
+        "include:$true"
+      ]
+    },
+    {
+      "type": "powershell",
+      "scripts": [
+        "scripts/Remove-WindowsFeatures.ps1",
+        "scripts/Config-Win2019OS.ps1",
+        "scripts/Clean-Windows.ps1",
+        "scripts/Disable-Autologon.ps1"
+      ]
+    },
+    {
+      "type": "windows-restart"
+    }
+  ]
+}
